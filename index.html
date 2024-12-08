@@ -1,1 +1,80 @@
+<html>
+    <head>
+        <style>
+            html, body { 
+              background-color:#000;
+              margin: 0;
+              padding: 0;
+              height: 100%;
+              overflow: hidden;  
+            }
+          </style>
 
+        <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+        <script type="importmap">
+        {
+        "imports": {
+            "three": "https://unpkg.com/three@latest/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@latest/examples/jsm/"
+            }
+        }
+        </script>
+        <script type="module">
+            import * as THREE from 'three';
+            import { VRButton } from 'three/addons/webxr/VRButton.js';
+            import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+            let renderer, scene, camera;
+            window.onload = function () {
+                // Setup Scene
+                scene = new THREE.Scene({ antialias: true });
+
+                // Setup Camera
+                let fov = 75;
+                let ratio = window.innerWidth / window.innerHeight;
+                let zNear = 0.1;
+                let zFar = 10000;
+                camera = new THREE.PerspectiveCamera(fov, ratio, zNear, zFar);
+                camera.position.set(0, 0, 0);
+
+                // Create renderer and add canvas to DOM
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+                renderer.setAnimationLoop(animate);
+
+                // Add VR Support
+                document.body.appendChild(VRButton.createButton(renderer));
+                renderer.xr.enabled = true;
+
+                // Create our Cube
+                let geometry = new THREE.BoxGeometry(1, 1, 1);
+                let material = new THREE.MeshBasicMaterial( {color: 0xffffff} ); 
+                let cube = new THREE.Mesh(geometry, material);
+                cube.position.set(0, 0, -3);
+                scene.add(cube);
+
+                // VR controls 
+                const controllerModelFactory = new XRControllerModelFactory();
+
+               let  controller1Grip = renderer.xr.getControllerGrip(0);
+                controller1Grip.add(controllerModelFactory.createControllerModel(controller1Grip));
+                scene.add(controller1Grip);
+
+                let controller2Grip = renderer.xr.getControllerGrip(1);
+                controller2Grip.add(controllerModelFactory.createControllerModel(controller2Grip));
+                scene.add(controller2Grip);
+            }
+
+            function animate() {
+                // Render Scene and Camera every frame
+                renderer.render(scene, camera);
+            }
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>
